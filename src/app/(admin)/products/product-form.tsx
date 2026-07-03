@@ -1,4 +1,5 @@
 import type { ProductRow } from "@/db/schema";
+import ImageUploadField from "@/components/image-upload-field";
 import { saveProduct } from "./actions";
 
 const input =
@@ -145,34 +146,19 @@ export default function ProductForm({
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <div>
-          <label className={label} htmlFor="imageA">Image A URL (main) *</label>
-          <input
-            id="imageA"
-            name="imageA"
-            required
-            defaultValue={product?.imageA}
-            placeholder="https://res.cloudinary.com/…"
-            className={input}
-          />
-          {product?.imageA && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={product.imageA} alt="" className="mt-3 h-32 rounded object-cover" />
-          )}
-        </div>
-        <div>
-          <label className={label} htmlFor="imageB">Image B URL (hover, optional)</label>
-          <input
-            id="imageB"
-            name="imageB"
-            defaultValue={product?.imageB}
-            className={input}
-          />
-          {product?.imageB && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={product.imageB} alt="" className="mt-3 h-32 rounded object-cover" />
-          )}
-        </div>
+        <ImageUploadField
+          name="imageA"
+          label="Image A (main) *"
+          required
+          defaultValue={product?.imageA}
+          folder="norfu/products"
+        />
+        <ImageUploadField
+          name="imageB"
+          label="Image B (hover, optional)"
+          defaultValue={product?.imageB}
+          folder="norfu/products"
+        />
       </div>
 
       <div className="flex items-center gap-8">

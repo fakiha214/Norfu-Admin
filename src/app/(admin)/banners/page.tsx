@@ -1,6 +1,7 @@
 import { asc } from "drizzle-orm";
 import { db } from "@/db";
 import { banners } from "@/db/schema";
+import ImageUploadField from "@/components/image-upload-field";
 import { updateBanner } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -84,10 +85,13 @@ export default async function BannersPage() {
                   <label className={label}>Link (href)</label>
                   <input name="href" defaultValue={b.href} className={input} />
                 </div>
-                <div>
-                  <label className={label}>Image URL</label>
-                  <input name="imageUrl" defaultValue={b.imageUrl} className={input} />
-                </div>
+                <ImageUploadField
+                  name="imageUrl"
+                  label="Image"
+                  required
+                  defaultValue={b.imageUrl}
+                  folder="norfu/banners"
+                />
               </div>
             </div>
 
