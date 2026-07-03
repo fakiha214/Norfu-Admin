@@ -1,5 +1,7 @@
 import type { ProductRow, ProductSizeRow } from "@/db/schema";
 import ImageUploadField from "@/components/image-upload-field";
+import SizeStockEditor from "@/components/size-stock-editor";
+import ColorEditor from "@/components/color-editor";
 import { saveProduct } from "./actions";
 
 const input =
@@ -16,12 +18,11 @@ export default function ProductForm({
   sizes?: ProductSizeRow[];
   error?: string;
 }) {
-  const colorsText = (product?.colors ?? [])
-    .map((c) => `${c.name} | ${c.hex}`)
-    .join("\n");
-  const sizesText = (sizes ?? [])
-    .map((s) => `${s.size} | ${s.stock}`)
-    .join("\n");
+  const colorRows = (product?.colors ?? []).map((c) => ({
+    name: c.name,
+    hex: c.hex,
+  }));
+  const sizeRows = (sizes ?? []).map((s) => ({ size: s.size, stock: s.stock }));
 
   return (
     <form
@@ -129,35 +130,14 @@ export default function ProductForm({
         />
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         <div>
-          <label className={label} htmlFor="sizes">
-            Sizes &amp; stock (one per line: Size | Stock)
-          </label>
-          <textarea
-            id="sizes"
-            name="sizes"
-            rows={5}
-            defaultValue={sizesText}
-            placeholder={"S | 10\nM | 15\nL | 8"}
-            className={input}
-          />
-          <p className="mt-1 text-xs text-slate-400">
-            Stock 0 shows the size as sold out on the storefront.
-          </p>
+          <p className={label}>Sizes &amp; stock</p>
+          <SizeStockEditor name="sizes" defaultRows={sizeRows} />
         </div>
         <div>
-          <label className={label} htmlFor="colors">
-            Colours (one per line: Name | #hex)
-          </label>
-          <textarea
-            id="colors"
-            name="colors"
-            rows={5}
-            defaultValue={colorsText}
-            placeholder={"Ecru | #D8CFC0\nCharcoal | #3A3A3A"}
-            className={input}
-          />
+          <p className={label}>Colours</p>
+          <ColorEditor name="colors" defaultRows={colorRows} />
         </div>
       </div>
 
