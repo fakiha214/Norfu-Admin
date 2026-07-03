@@ -1,21 +1,32 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { announcements, banners, products, subscribers } from "@/db/schema";
+import { announcements, banners, orders, products, subscribers } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [productCount, activeCount, bannerCount, announcementCount, subscriberCount] =
-    await Promise.all([
-      db.$count(products),
-      db.$count(products, eq(products.isActive, true)),
-      db.$count(banners),
-      db.$count(announcements),
-      db.$count(subscribers),
-    ]);
+  const [
+    orderCount,
+    pendingCount,
+    productCount,
+    activeCount,
+    bannerCount,
+    announcementCount,
+    subscriberCount,
+  ] = await Promise.all([
+    db.$count(orders),
+    db.$count(orders, eq(orders.status, "pending")),
+    db.$count(products),
+    db.$count(products, eq(products.isActive, true)),
+    db.$count(banners),
+    db.$count(announcements),
+    db.$count(subscribers),
+  ]);
 
   const cards = [
+    { label: "Orders", value: orderCount, href: "/orders" },
+    { label: "Pending orders", value: pendingCount, href: "/orders", alert: pendingCount > 0 },
     { label: "Products", value: productCount, href: "/products" },
     { label: "Active products", value: activeCount, href: "/products" },
     { label: "Banners", value: bannerCount, href: "/banners" },
@@ -29,12 +40,14 @@ export default async function DashboardPage() {
       <p className="mt-1 text-sm text-slate-500">
         Changes appear on the storefront within about a minute (60s cache).
       </p>
-      <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {cards.map((card) => (
           <Link
             key={card.label}
             href={card.href}
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+            className={`rounded-xl border bg-white p-5 shadow-sm transition-shadow hover:shadow-md ${
+              card.alert ? "border-amber-300 bg-amber-50" : "border-slate-200"
+            }`}
           >
             <p className="text-3xl font-bold">{card.value}</p>
             <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500">

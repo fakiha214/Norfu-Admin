@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { asc } from "drizzle-orm";
 import { db } from "@/db";
-import { products } from "@/db/schema";
+import { products, productSizes } from "@/db/schema";
 import { deleteProduct, setProductActive } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +13,12 @@ export default async function ProductsPage() {
     .select()
     .from(products)
     .orderBy(asc(products.sortOrder), asc(products.id));
+
+  const sizeRows = await db.select().from(productSizes);
+  const stockByProduct = new Map<number, number>();
+  for (const s of sizeRows) {
+    stockByProduct.set(s.productId, (stockByProduct.get(s.productId) ?? 0) + s.stock);
+  }
 
   return (
     <div>
@@ -38,6 +44,7 @@ export default async function ProductsPage() {
               <th className="px-4 py-3">Product</th>
               <th className="px-4 py-3">Gender / Category</th>
               <th className="px-4 py-3">Price</th>
+              <th className="px-4 py-3">Stock</th>
               <th className="px-4 py-3">Badge</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3 text-right">Actions</th>
@@ -72,6 +79,24 @@ export default async function ProductsPage() {
                   ) : (
                     <span className="font-semibold">{pkr(p.price)}</span>
                   )}
+                </td>
+                <td className="px-4 py-3">
+                  {(() => {
+                    const stock = stockByProduct.get(p.id) ?? 0;
+                    return (
+                      <span
+                        className={`font-semibold ${
+                          stock === 0
+                            ? "text-red-600"
+                            : stock <= 10
+                              ? "text-amber-600"
+                              : "text-slate-700"
+                        }`}
+                      >
+                        {stock === 0 ? "Sold out" : stock}
+                      </span>
+                    );
+                  })()}
                 </td>
                 <td className="px-4 py-3">
                   {p.badge ? (

@@ -11,6 +11,11 @@ const SETTING_DEFS: { key: string; label: string; hint: string }[] = [
     hint: "Orders above this amount ship free — drives the cart progress bar.",
   },
   {
+    key: "shipping_fee",
+    label: "Shipping fee (PKR)",
+    hint: "Flat delivery charge for orders below the free-shipping threshold.",
+  },
+  {
     key: "sale_rail_title",
     label: "Homepage sale rail title",
     hint: "Heading of the first product carousel on the homepage.",

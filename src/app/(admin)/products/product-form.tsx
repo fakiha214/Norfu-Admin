@@ -1,4 +1,4 @@
-import type { ProductRow } from "@/db/schema";
+import type { ProductRow, ProductSizeRow } from "@/db/schema";
 import ImageUploadField from "@/components/image-upload-field";
 import { saveProduct } from "./actions";
 
@@ -9,13 +9,18 @@ const label =
 
 export default function ProductForm({
   product,
+  sizes,
   error,
 }: {
   product?: ProductRow;
+  sizes?: ProductSizeRow[];
   error?: string;
 }) {
   const colorsText = (product?.colors ?? [])
     .map((c) => `${c.name} | ${c.hex}`)
+    .join("\n");
+  const sizesText = (sizes ?? [])
+    .map((s) => `${s.size} | ${s.stock}`)
     .join("\n");
 
   return (
@@ -28,6 +33,11 @@ export default function ProductForm({
       {error === "missing" && (
         <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
           Name, slug and Image A are required.
+        </p>
+      )}
+      {error === "slug-taken" && (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          A product with that slug already exists — pick a different slug.
         </p>
       )}
 
@@ -121,14 +131,20 @@ export default function ProductForm({
 
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
-          <label className={label} htmlFor="sizes">Sizes (comma separated)</label>
-          <input
+          <label className={label} htmlFor="sizes">
+            Sizes &amp; stock (one per line: Size | Stock)
+          </label>
+          <textarea
             id="sizes"
             name="sizes"
-            defaultValue={product?.sizes.join(", ")}
-            placeholder="XS, S, M, L, XL"
+            rows={5}
+            defaultValue={sizesText}
+            placeholder={"S | 10\nM | 15\nL | 8"}
             className={input}
           />
+          <p className="mt-1 text-xs text-slate-400">
+            Stock 0 shows the size as sold out on the storefront.
+          </p>
         </div>
         <div>
           <label className={label} htmlFor="colors">
@@ -137,7 +153,7 @@ export default function ProductForm({
           <textarea
             id="colors"
             name="colors"
-            rows={3}
+            rows={5}
             defaultValue={colorsText}
             placeholder={"Ecru | #D8CFC0\nCharcoal | #3A3A3A"}
             className={input}
