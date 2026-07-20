@@ -7,16 +7,39 @@ import {
   text,
   timestamp,
   unique,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 export type ProductColor = { name: string; hex: string };
+
+// Categories are admin-managed and self-referencing: a row with parentId = null
+// is a top-level category; a row with a parentId is a sub-category of it. The
+// storefront navigation, homepage tiles and collection pages are all built from
+// this table (the shop is men/unisex only, so there is no gender/age axis).
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  parentId: integer("parent_id").references((): AnyPgColumn => categories.id, {
+    onDelete: "cascade",
+  }),
+  imageUrl: text("image_url").notNull().default(""),
+  sortOrder: integer("sort_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
 
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
-  category: text("category").notNull(),
-  gender: text("gender", { enum: ["men", "women", "juniors"] }).notNull(),
+  // The category a product belongs to (top-level or sub-category). Null means
+  // uncategorised; the product stays searchable but is not filed under any
+  // navigation collection.
+  categoryId: integer("category_id").references(() => categories.id, {
+    onDelete: "set null",
+  }),
   fit: text("fit").notNull(),
   price: integer("price").notNull(),
   salePrice: integer("sale_price"),
@@ -88,8 +111,8 @@ export const orderItems = pgTable("order_items", {
 
 export const banners = pgTable("banners", {
   id: serial("id").primaryKey(),
-  // Fixed slots the storefront renders: hero-1, promo-1, promo-2,
-  // cat-men, cat-women, cat-juniors, cat-sale
+  // Content slots the storefront renders: hero-1, promo-1, promo-2.
+  // (Homepage category tiles are now driven by the categories table, not banners.)
   slot: text("slot").notNull().unique(),
   kicker: text("kicker").notNull().default(""),
   title: text("title").notNull().default(""),
@@ -119,6 +142,7 @@ export const subscribers = pgTable("subscribers", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export type CategoryRow = typeof categories.$inferSelect;
 export type ProductRow = typeof products.$inferSelect;
 export type ProductSizeRow = typeof productSizes.$inferSelect;
 export type OrderRow = typeof orders.$inferSelect;

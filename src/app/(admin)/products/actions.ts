@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { and, eq, notInArray } from "drizzle-orm";
 import { db } from "@/db";
-import { products, productSizes } from "@/db/schema";
+import { categories, products, productSizes } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth-server";
 
 function parseColors(raw: string) {
@@ -64,21 +64,30 @@ async function syncSizes(
   }
 }
 
+// Validate the submitted category id against the categories table; anything
+// missing/invalid falls back to uncategorised (null).
+async function resolveCategoryId(raw: string): Promise<number | null> {
+  if (!raw) return null;
+  const categoryId = Number(raw);
+  if (!Number.isInteger(categoryId)) return null;
+  const found = await db
+    .select({ id: categories.id })
+    .from(categories)
+    .where(eq(categories.id, categoryId))
+    .limit(1);
+  return found.length > 0 ? categoryId : null;
+}
+
 export async function saveProduct(formData: FormData) {
   await requireAdmin();
   const str = (key: string) => String(formData.get(key) ?? "").trim();
   const id = str("id") ? Number(str("id")) : null;
-  const gender = str("gender");
   const badge = str("badge");
 
   const values = {
     slug: str("slug").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""),
     name: str("name"),
-    category: str("category").toLowerCase(),
-    gender: (["men", "women", "juniors"].includes(gender) ? gender : "men") as
-      | "men"
-      | "women"
-      | "juniors",
+    categoryId: await resolveCategoryId(str("categoryId")),
     fit: str("fit"),
     price: Math.max(0, Math.round(Number(str("price")) || 0)),
     salePrice: str("salePrice")

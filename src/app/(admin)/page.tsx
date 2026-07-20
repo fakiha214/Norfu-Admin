@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { announcements, banners, orders, products, subscribers } from "@/db/schema";
+import { announcements, banners, categories, orders, products, subscribers } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +11,7 @@ export default async function DashboardPage() {
     pendingCount,
     productCount,
     activeCount,
+    categoryCount,
     bannerCount,
     announcementCount,
     subscriberCount,
@@ -19,6 +20,7 @@ export default async function DashboardPage() {
     db.$count(orders, eq(orders.status, "pending")),
     db.$count(products),
     db.$count(products, eq(products.isActive, true)),
+    db.$count(categories),
     db.$count(banners),
     db.$count(announcements),
     db.$count(subscribers),
@@ -29,6 +31,7 @@ export default async function DashboardPage() {
     { label: "Pending orders", value: pendingCount, href: "/orders", alert: pendingCount > 0 },
     { label: "Products", value: productCount, href: "/products" },
     { label: "Active products", value: activeCount, href: "/products" },
+    { label: "Categories", value: categoryCount, href: "/categories" },
     { label: "Banners", value: bannerCount, href: "/banners" },
     { label: "Announcements", value: announcementCount, href: "/announcements" },
     { label: "Subscribers", value: subscriberCount, href: "/subscribers" },

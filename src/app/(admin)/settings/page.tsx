@@ -26,9 +26,9 @@ const SETTING_DEFS: { key: string; label: string; hint: string }[] = [
     hint: "Heading of the second product carousel.",
   },
   {
-    key: "womens_rail_title",
-    label: "Homepage women's rail title",
-    hint: "Heading of the third product carousel.",
+    key: "featured_rail_title",
+    label: "Homepage featured rail title",
+    hint: "Heading of the third product carousel (most recent products).",
   },
 ];
 

@@ -1,4 +1,5 @@
-import type { ProductRow, ProductSizeRow } from "@/db/schema";
+import Link from "next/link";
+import type { CategoryRow, ProductRow, ProductSizeRow } from "@/db/schema";
 import ImageUploadField from "@/components/image-upload-field";
 import SizeStockEditor from "@/components/size-stock-editor";
 import ColorEditor from "@/components/color-editor";
@@ -12,10 +13,12 @@ const label =
 export default function ProductForm({
   product,
   sizes,
+  categories,
   error,
 }: {
   product?: ProductRow;
   sizes?: ProductSizeRow[];
+  categories: CategoryRow[];
   error?: string;
 }) {
   const colorRows = (product?.colors ?? []).map((c) => ({
@@ -23,6 +26,11 @@ export default function ProductForm({
     hex: c.hex,
   }));
   const sizeRows = (sizes ?? []).map((s) => ({ size: s.size, stock: s.stock }));
+
+  // Build a hierarchical <option> list: top-level categories with their
+  // sub-categories indented underneath.
+  const tops = categories.filter((c) => c.parentId === null);
+  const childrenOf = (id: number) => categories.filter((c) => c.parentId === id);
 
   return (
     <form
@@ -59,22 +67,31 @@ export default function ProductForm({
           />
         </div>
         <div>
-          <label className={label} htmlFor="gender">Gender</label>
-          <select id="gender" name="gender" defaultValue={product?.gender ?? "men"} className={input}>
-            <option value="men">Men</option>
-            <option value="women">Women</option>
-            <option value="juniors">Juniors</option>
-          </select>
-        </div>
-        <div>
-          <label className={label} htmlFor="category">Category</label>
-          <input
-            id="category"
-            name="category"
-            defaultValue={product?.category}
-            placeholder="t-shirts, polos, jeans…"
+          <label className={label} htmlFor="categoryId">Category</label>
+          <select
+            id="categoryId"
+            name="categoryId"
+            defaultValue={product?.categoryId ?? ""}
             className={input}
-          />
+          >
+            <option value="">— Uncategorised —</option>
+            {tops.map((top) => (
+              <optgroup key={top.id} label={top.name}>
+                <option value={top.id}>{top.name} (all)</option>
+                {childrenOf(top.id).map((child) => (
+                  <option key={child.id} value={child.id}>
+                    {"  "}
+                    {child.name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          {categories.length === 0 && (
+            <p className="mt-1 text-xs text-amber-600">
+              No categories yet — add some under Categories first.
+            </p>
+          )}
         </div>
         <div>
           <label className={label} htmlFor="fit">Fit label</label>
@@ -183,12 +200,12 @@ export default function ProductForm({
         <button className="rounded-lg bg-slate-900 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white hover:opacity-90">
           {product ? "Save changes" : "Create product"}
         </button>
-        <a
+        <Link
           href="/products"
           className="rounded-lg border border-slate-300 px-6 py-3 text-xs font-bold uppercase tracking-wider hover:border-slate-900"
         >
           Cancel
-        </a>
+        </Link>
       </div>
     </form>
   );

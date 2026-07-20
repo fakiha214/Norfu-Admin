@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { asc } from "drizzle-orm";
 import { db } from "@/db";
-import { products, productSizes } from "@/db/schema";
+import { categories, products, productSizes } from "@/db/schema";
 import { deleteProduct, setProductActive } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +19,9 @@ export default async function ProductsPage() {
   for (const s of sizeRows) {
     stockByProduct.set(s.productId, (stockByProduct.get(s.productId) ?? 0) + s.stock);
   }
+
+  const catRows = await db.select().from(categories);
+  const catName = new Map<number, string>(catRows.map((c) => [c.id, c.name]));
 
   return (
     <div>
@@ -42,7 +45,7 @@ export default async function ProductsPage() {
           <thead>
             <tr className="border-b border-slate-200 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
               <th className="px-4 py-3">Product</th>
-              <th className="px-4 py-3">Gender / Category</th>
+              <th className="px-4 py-3">Category</th>
               <th className="px-4 py-3">Price</th>
               <th className="px-4 py-3">Stock</th>
               <th className="px-4 py-3">Badge</th>
@@ -67,8 +70,14 @@ export default async function ProductsPage() {
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 capitalize text-slate-600">
-                  {p.gender} / {p.category}
+                <td className="px-4 py-3 text-slate-600">
+                  {p.categoryId !== null ? (
+                    catName.get(p.categoryId) ?? (
+                      <span className="text-slate-300">—</span>
+                    )
+                  ) : (
+                    <span className="text-slate-300">Uncategorised</span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {p.salePrice ? (

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { products, productSizes } from "@/db/schema";
+import { categories, products, productSizes } from "@/db/schema";
 import ProductForm from "../product-form";
 
 export const dynamic = "force-dynamic";
@@ -32,10 +32,15 @@ export default async function EditProductPage({
     .where(eq(productSizes.productId, productId))
     .orderBy(asc(productSizes.sortOrder), asc(productSizes.id));
 
+  const cats = await db
+    .select()
+    .from(categories)
+    .orderBy(asc(categories.sortOrder), asc(categories.name));
+
   return (
     <div>
       <h1 className="text-2xl font-bold">Edit — {product.name}</h1>
-      <ProductForm product={product} sizes={sizes} error={error} />
+      <ProductForm product={product} sizes={sizes} categories={cats} error={error} />
     </div>
   );
 }

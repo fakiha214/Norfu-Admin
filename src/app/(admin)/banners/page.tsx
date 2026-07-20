@@ -6,15 +6,15 @@ import { updateBanner } from "./actions";
 
 export const dynamic = "force-dynamic";
 
+// The storefront only renders these content slots. Homepage category tiles are
+// managed under Categories now, so any legacy cat-* banner rows are hidden here.
 const SLOT_INFO: Record<string, string> = {
   "hero-1": "Homepage hero — full-screen banner at the top. Title is the big animated headline.",
   "promo-1": "Homepage promo — left tile of the split banner section.",
   "promo-2": "Homepage promo — right tile of the split banner section.",
-  "cat-men": "Homepage category tile — Men.",
-  "cat-women": "Homepage category tile — Women.",
-  "cat-juniors": "Homepage category tile — Juniors.",
-  "cat-sale": "Homepage category tile — Sale.",
 };
+
+const VISIBLE_SLOTS = new Set(Object.keys(SLOT_INFO));
 
 const input =
   "w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none focus:border-slate-900";
@@ -22,7 +22,8 @@ const label =
   "mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500";
 
 export default async function BannersPage() {
-  const rows = await db.select().from(banners).orderBy(asc(banners.id));
+  const allRows = await db.select().from(banners).orderBy(asc(banners.id));
+  const rows = allRows.filter((b) => VISIBLE_SLOTS.has(b.slot));
 
   return (
     <div>
