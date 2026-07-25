@@ -17,8 +17,11 @@ export default function ColorEditor({
 }) {
   const [rows, setRows] = useState<Row[]>(defaultRows);
 
+  // Keep any row that has a name OR a valid hex — a name-less swatch is saved
+  // and auto-named server-side (previously such rows were dropped, which is why
+  // colours picked with only the swatch didn't save).
   const serialized = rows
-    .filter((r) => r.name.trim())
+    .filter((r) => r.name.trim() || HEX_RE.test(r.hex))
     .map((r) => `${r.name.trim()} | ${HEX_RE.test(r.hex) ? r.hex : "#cccccc"}`)
     .join("\n");
 
@@ -86,7 +89,8 @@ export default function ColorEditor({
         + Add colour
       </button>
       <p className="mt-2 text-xs text-slate-400">
-        Shown as swatches on product cards and the product page.
+        Shown as swatches on product cards and the product page. Leave the name
+        blank to auto-name a swatch from its colour.
       </p>
     </div>
   );

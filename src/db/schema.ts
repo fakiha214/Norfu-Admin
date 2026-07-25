@@ -46,8 +46,11 @@ export const products = pgTable("products", {
   badge: text("badge", { enum: ["sale", "new"] }),
   description: text("description").notNull().default(""),
   colors: jsonb("colors").$type<ProductColor[]>().notNull().default([]),
-  imageA: text("image_a").notNull(),
-  imageB: text("image_b").notNull(),
+  // Up to 8 image URLs; images[0] is the main image, images[1] the hover image,
+  // the rest are extra gallery shots.
+  images: jsonb("images").$type<string[]>().notNull().default([]),
+  // When true, the product page shows a Size Guide button/modal (chart.png).
+  showSizeChart: boolean("show_size_chart").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),

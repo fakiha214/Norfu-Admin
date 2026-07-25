@@ -60,7 +60,7 @@ export default async function ProductsPage() {
                   <div className="flex items-center gap-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={p.imageA}
+                      src={p.images[0] ?? ""}
                       alt=""
                       className="h-12 w-9 rounded object-cover bg-slate-100"
                     />

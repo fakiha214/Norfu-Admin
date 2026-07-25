@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CategoryRow, ProductRow, ProductSizeRow } from "@/db/schema";
-import ImageUploadField from "@/components/image-upload-field";
+import ImageListEditor from "@/components/image-list-editor";
 import SizeStockEditor from "@/components/size-stock-editor";
 import ColorEditor from "@/components/color-editor";
 import { saveProduct } from "./actions";
@@ -41,7 +41,7 @@ export default function ProductForm({
 
       {error === "missing" && (
         <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          Name, slug and Image A are required.
+          Name, slug and at least one image are required.
         </p>
       )}
       {error === "slug-taken" && (
@@ -158,23 +158,17 @@ export default function ProductForm({
         </div>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <ImageUploadField
-          name="imageA"
-          label="Image A (main) *"
-          required
-          defaultValue={product?.imageA}
+      <div>
+        <p className={label}>Images (up to 8) *</p>
+        <ImageListEditor
+          name="images"
+          defaultImages={product?.images ?? []}
           folder="norfu/products"
-        />
-        <ImageUploadField
-          name="imageB"
-          label="Image B (hover, optional)"
-          defaultValue={product?.imageB}
-          folder="norfu/products"
+          max={8}
         />
       </div>
 
-      <div className="flex items-center gap-8">
+      <div className="flex flex-wrap items-center gap-8">
         <label className="flex items-center gap-2 text-sm font-medium">
           <input
             type="checkbox"
@@ -183,6 +177,15 @@ export default function ProductForm({
             className="h-4 w-4"
           />
           Visible on storefront
+        </label>
+        <label className="flex items-center gap-2 text-sm font-medium">
+          <input
+            type="checkbox"
+            name="showSizeChart"
+            defaultChecked={product?.showSizeChart ?? false}
+            className="h-4 w-4"
+          />
+          Show size chart
         </label>
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium" htmlFor="sortOrder">Sort order</label>
